@@ -1,0 +1,25 @@
+{% extends 'Task/base.html' %}
+
+{% block content %}
+
+<body>
+    <div class="container bg-dark text-info p-5 form-layout">
+        <h3>Add New Task</h3>
+        <hr>
+        <form method="POST" autocomplete="off">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="d-inline-flex">
+                <button type="submit" class="btn btn-primary">
+                    ADD TASK &nbsp;<i class="fa-regular fa-circle-check"></i>
+                </button>
+                &nbsp;&nbsp;&nbsp;
+                <a href="{% url  'dashboard' %}" class="btn btn-secondary">
+                    Return &nbsp;<i class="fa-solid fa-arrow-left"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+    <br>
+</body>
+{% endblock %}
