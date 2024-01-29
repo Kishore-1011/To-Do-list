@@ -1,0 +1,37 @@
+.navbar-dark .navbar-nav .nav-link {
+    color: white;
+    font-size: 1.2rem;
+}
+.navbar-dark .navbar-nav .nav-link:hover{
+    color: rgb(255, 136, 0);
+}
+
+.navbar-dark {
+    background-color: #343a40; /* Dark background color */
+}
+
+.form-layout .btn{
+    font-size: 1.2rem;
+}
+
+.form-layout{
+    font-size: 1.2rem;
+    border-radius: 15px;
+    width: 650px;
+    background-color: rgba(13, 62, 88, 0.308);
+}
+.form-layout input,button{
+    padding:10px;
+    border: 1px solid black;
+    border-radius: 10px;
+    width: 100%;
+    height: 45px;
+}
+
+.form-layout input,button:focus{
+    outline: none;
+}
+
+.form-layout li{
+    display: none;
+}
