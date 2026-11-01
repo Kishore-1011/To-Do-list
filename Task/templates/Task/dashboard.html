@@ -1,61 +1,180 @@
 {% extends 'Task/base.html' %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}My tasks{% endblock %}
 
 {% block content %}
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
   <div>
     <h1 class="h3 fw-bold mb-1">Hi, {{ user.username }} 👋</h1>
     <p class="text-body-secondary mb-0">
-      {% if records %}You have {{ records|length }} task{{ records|length|pluralize }}.{% else %}Your task list is empty.{% endif %}
+      {% if stats.total %}
+        {% if stats.open %}You have {{ stats.open }} open task{{ stats.open|pluralize }}{% if stats.overdue %}, {{ stats.overdue }} overdue{% endif %}.
+        {% else %}Everything is done. Great job!{% endif %}
+      {% else %}Your task list is empty.{% endif %}
     </p>
   </div>
-  <a class="btn btn-primary" href="{% url 'create-task' %}"><i class="bi bi-plus-lg"></i> New task</a>
+  <div class="d-flex gap-2">
+    <div class="btn-group" role="group" aria-label="View">
+      <a class="btn btn-outline-secondary active" href="{% url 'dashboard' %}" aria-current="page"><i class="bi bi-list-check"></i> List</a>
+      <a class="btn btn-outline-secondary" href="{% url 'board' %}"><i class="bi bi-kanban"></i> Board</a>
+    </div>
+    <a class="btn btn-primary" href="{% url 'create-task' %}"><i class="bi bi-plus-lg"></i> New task</a>
+  </div>
 </div>
 
+{% if stats.total %}
 <div class="row g-3 mb-4">
-  {% for category in category_counts %}
-  <div class="col-4">
+  <div class="col-6 col-lg-3">
+    <a class="stat card border-0 shadow-sm h-100 text-decoration-none" href="?status=open">
+      <div class="card-body">
+        <div class="stat-label"><i class="bi bi-circle"></i> Open</div>
+        <div class="stat-value">{{ stats.open }}</div>
+      </div>
+    </a>
+  </div>
+  <div class="col-6 col-lg-3">
+    <a class="stat card border-0 shadow-sm h-100 text-decoration-none" href="?status=overdue">
+      <div class="card-body">
+        <div class="stat-label text-danger"><i class="bi bi-exclamation-triangle"></i> Overdue</div>
+        <div class="stat-value{% if stats.overdue %} text-danger{% endif %}">{{ stats.overdue }}</div>
+      </div>
+    </a>
+  </div>
+  <div class="col-6 col-lg-3">
+    <a class="stat card border-0 shadow-sm h-100 text-decoration-none" href="?status=completed">
+      <div class="card-body">
+        <div class="stat-label text-success"><i class="bi bi-check-circle"></i> Completed</div>
+        <div class="stat-value">{{ stats.completed }}</div>
+      </div>
+    </a>
+  </div>
+  <div class="col-6 col-lg-3">
     <div class="stat card border-0 shadow-sm h-100">
-      <div class="card-body py-3">
-        <span class="category-badge category-{% if category.code == 'H' %}home{% elif category.code == 'S' %}school{% else %}office{% endif %}">{{ category.label }}</span>
-        <div class="fs-3 fw-bold mt-2">{{ category.total }}</div>
+      <div class="card-body">
+        <div class="stat-label"><i class="bi bi-graph-up"></i> Progress</div>
+        <div class="stat-value">{{ stats.percent_done }}%</div>
+        <div class="progress mt-2" role="progressbar" aria-label="Tasks completed"
+             aria-valuenow="{{ stats.percent_done }}" aria-valuemin="0" aria-valuemax="100" style="height: 6px">
+          <div class="progress-bar bg-success" style="width: {{ stats.percent_done }}%"></div>
+        </div>
       </div>
     </div>
   </div>
-  {% endfor %}
 </div>
+
+<form class="filter-bar card border-0 shadow-sm mb-4" method="get" role="search" data-auto-submit>
+  <div class="card-body row g-2 align-items-center">
+    <div class="col-12 col-lg-4">
+      <label class="visually-hidden" for="filter-q">Search tasks</label>
+      <div class="input-group">
+        <span class="input-group-text bg-transparent"><i class="bi bi-search"></i></span>
+        <input class="form-control" type="search" id="filter-q" name="q" value="{{ query }}" placeholder="Search tasks">
+      </div>
+    </div>
+    <div class="col-6 col-md-3 col-lg-2">
+      <label class="visually-hidden" for="filter-status">Status</label>
+      <select class="form-select" id="filter-status" name="status">
+        <option value="">All statuses</option>
+        <option value="open"{% if selected_status == 'open' %} selected{% endif %}>Open</option>
+        <option value="overdue"{% if selected_status == 'overdue' %} selected{% endif %}>Overdue</option>
+        {% for value, label in status_choices %}
+        <option value="{{ value }}"{% if selected_status == value %} selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-3 col-lg-2">
+      <label class="visually-hidden" for="filter-category">Category</label>
+      <select class="form-select" id="filter-category" name="category">
+        <option value="">All categories</option>
+        {% for value, label in category_choices %}
+        <option value="{{ value }}"{% if selected_category == value %} selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-3 col-lg-2">
+      <label class="visually-hidden" for="filter-priority">Priority</label>
+      <select class="form-select" id="filter-priority" name="priority">
+        <option value="">Any priority</option>
+        {% for value, label in priority_choices %}
+        <option value="{{ value }}"{% if selected_priority == value|stringformat:'s' %} selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-3 col-lg-2">
+      <label class="visually-hidden" for="filter-sort">Sort by</label>
+      <select class="form-select" id="filter-sort" name="sort">
+        {% for value, label in sort_choices %}
+        <option value="{{ value }}"{% if selected_sort == value %} selected{% endif %}>Sort: {{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <noscript><div class="col-12"><button class="btn btn-primary btn-sm" type="submit">Apply</button></div></noscript>
+  </div>
+</form>
+
+{% if is_filtered %}
+<p class="small text-body-secondary mb-3">
+  Showing {{ records|length }} task{{ records|length|pluralize }} · <a href="{% url 'dashboard' %}">Clear filters</a>
+</p>
+{% endif %}
+{% endif %}
 
 {% if records %}
 <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
   {% for task in records %}
   <div class="col">
-    <article class="task-card card h-100 border-0 shadow-sm">
+    <article class="task-card card h-100 border-0 shadow-sm{% if task.is_completed %} is-completed{% endif %}{% if task.due_state == 'overdue' %} is-overdue{% endif %}">
       <div class="card-body d-flex flex-column">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="text-body-secondary small fw-medium">Task-{{ task.task_number }}</span>
-          <span class="category-badge category-{{ task.category_style }}">{{ task.get_category_display }}</span>
+        <div class="d-flex align-items-start gap-2 mb-2">
+          <form method="post" action="{% url 'toggle-complete' task.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button type="submit" class="complete-toggle" aria-pressed="{{ task.is_completed|yesno:'true,false' }}"
+                    title="{% if task.is_completed %}Mark as not done{% else %}Mark as complete{% endif %}"
+                    aria-label="{% if task.is_completed %}Mark Task-{{ task.task_number }} as not done{% else %}Mark Task-{{ task.task_number }} as complete{% endif %}">
+              <i class="bi {% if task.is_completed %}bi-check-circle-fill{% else %}bi-circle{% endif %}"></i>
+            </button>
+          </form>
+          <div class="flex-grow-1 min-w-0">
+            <div class="d-flex justify-content-between align-items-center gap-2">
+              <span class="text-body-secondary small fw-medium">Task-{{ task.task_number }}</span>
+              <span class="status-badge status-{{ task.status }}">{{ task.get_status_display }}</span>
+            </div>
+            <h2 class="task-title h5 fw-semibold mb-0 mt-1 text-break">{{ task.name }}</h2>
+          </div>
         </div>
-        <h2 class="h5 fw-semibold mb-2 text-break">{{ task.name }}</h2>
-        <p class="task-description text-body-secondary mb-3 text-break">{{ task.description }}</p>
+        {% if task.description %}
+        <p class="task-description text-body-secondary small mb-3 text-break">{{ task.description }}</p>
+        {% endif %}
+        <div class="mb-3">{% include 'Task/_task_meta.html' %}</div>
         <div class="mt-auto d-flex gap-2">
-          <a class="btn btn-sm btn-outline-primary" href="{% url 'update-task' task.id %}">
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'update-task' task.id %}?next={{ request.get_full_path|urlencode }}">
             <i class="bi bi-pencil"></i> Edit
           </a>
-          <a class="btn btn-sm btn-outline-danger" href="{% url 'delete-task' task.id %}">
+          <a class="btn btn-sm btn-outline-danger" href="{% url 'delete-task' task.id %}?next={{ request.get_full_path|urlencode }}">
             <i class="bi bi-trash"></i> Delete
           </a>
+          {% if task.is_completed and task.completed_at %}
+          <span class="ms-auto small text-success align-self-center"><i class="bi bi-check2"></i> {{ task.completed_at|date:'j M' }}</span>
+          {% endif %}
         </div>
       </div>
     </article>
   </div>
   {% endfor %}
 </div>
+{% elif is_filtered %}
+<div class="empty-state text-center py-5 px-3">
+  <div class="feature-icon mx-auto mb-3"><i class="bi bi-funnel"></i></div>
+  <h2 class="h5 fw-semibold">No tasks match these filters</h2>
+  <p class="text-body-secondary mb-4">Try a different search or clear the filters.</p>
+  <a class="btn btn-outline-primary" href="{% url 'dashboard' %}">Clear filters</a>
+</div>
 {% else %}
 <div class="empty-state text-center py-5 px-3">
   <div class="feature-icon mx-auto mb-3"><i class="bi bi-clipboard-check"></i></div>
   <h2 class="h5 fw-semibold">No tasks yet</h2>
-  <p class="text-body-secondary mb-4">Add your first task to get started. You can sort it into Home, School or Office.</p>
+  <p class="text-body-secondary mb-4">Add your first task with a due date and priority, then track it on the board.</p>
   <a class="btn btn-primary" href="{% url 'create-task' %}"><i class="bi bi-plus-lg"></i> Add your first task</a>
 </div>
 {% endif %}

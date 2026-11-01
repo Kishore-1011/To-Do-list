@@ -15,7 +15,10 @@ urlpatterns = [
     path('login/', Task.views.my_login, name='my-login'),
     path('logout/', Task.views.user_logout, name='user-logout'),
     path('dashboard/', Task.views.dashboard, name='dashboard'),
+    path('board/', Task.views.board, name='board'),
     path('tasks/new/', Task.views.create_task, name='create-task'),
     path('tasks/<int:pk>/edit/', Task.views.update_task, name='update-task'),
+    path('tasks/<int:pk>/status/', Task.views.update_status, name='update-status'),
+    path('tasks/<int:pk>/complete/', Task.views.toggle_complete, name='toggle-complete'),
     path('tasks/<int:pk>/delete/', Task.views.delete_task, name='delete-task'),
 ]

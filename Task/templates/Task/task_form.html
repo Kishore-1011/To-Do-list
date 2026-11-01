@@ -5,7 +5,7 @@
 {% block content %}
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb small">
-    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">My tasks</a></li>
     <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
   </ol>
 </nav>
@@ -16,15 +16,25 @@
 
     <form method="post" novalidate>
       {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
       {% if form.non_field_errors %}
       <div class="alert alert-danger py-2" role="alert">{{ form.non_field_errors|join:" " }}</div>
       {% endif %}
-      {% for field in form %}
-        {% include 'Task/_field.html' %}
-      {% endfor %}
+
+      {% with field=form.name %}{% include 'Task/_field.html' %}{% endwith %}
+
+      <div class="row g-3">
+        <div class="col-sm-6">{% with field=form.category %}{% include 'Task/_field.html' %}{% endwith %}</div>
+        <div class="col-sm-6">{% with field=form.priority %}{% include 'Task/_field.html' %}{% endwith %}</div>
+        <div class="col-sm-6">{% with field=form.status %}{% include 'Task/_field.html' %}{% endwith %}</div>
+        <div class="col-sm-6">{% with field=form.due_date %}{% include 'Task/_field.html' %}{% endwith %}</div>
+      </div>
+
+      {% with field=form.description %}{% include 'Task/_field.html' %}{% endwith %}
+
       <div class="d-flex flex-wrap gap-2 mt-4">
         <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-lg"></i> {{ submit_label }}</button>
-        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+        <a href="{% if next %}{{ next }}{% else %}{% url 'dashboard' %}{% endif %}" class="btn btn-outline-secondary">Cancel</a>
       </div>
     </form>
   </div>

@@ -14,7 +14,8 @@
 
     <form method="post" class="d-flex flex-wrap justify-content-center gap-2">
       {% csrf_token %}
-      <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+      <input type="hidden" name="next" value="{{ next }}">
+      <a href="{% if next %}{{ next }}{% else %}{% url 'dashboard' %}{% endif %}" class="btn btn-outline-secondary px-4">Cancel</a>
       <button type="submit" class="btn btn-danger px-4"><i class="bi bi-trash"></i> Delete task</button>
     </form>
   </div>

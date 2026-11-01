@@ -25,19 +25,22 @@
       <div class="card-body p-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <span class="fw-semibold">My tasks</span>
-          <span class="text-body-secondary small">3 tasks</span>
+          <span class="text-body-secondary small">1 of 3 done</span>
         </div>
         <div class="preview-item">
-          <span class="category-badge category-office">Office</span>
-          <span>Prepare sprint demo</span>
+          <i class="bi bi-circle text-body-secondary"></i>
+          <span class="flex-grow-1">Prepare sprint demo</span>
+          <span class="due-badge due-today"><i class="bi bi-calendar-event"></i> Due today</span>
         </div>
         <div class="preview-item">
-          <span class="category-badge category-school">School</span>
-          <span>Submit DBMS assignment</span>
+          <i class="bi bi-circle text-body-secondary"></i>
+          <span class="flex-grow-1">Submit DBMS assignment</span>
+          <span class="due-badge due-overdue"><i class="bi bi-exclamation-triangle-fill"></i> Overdue</span>
         </div>
         <div class="preview-item">
-          <span class="category-badge category-home">Home</span>
-          <span>Pay electricity bill</span>
+          <i class="bi bi-check-circle-fill text-success"></i>
+          <span class="flex-grow-1 text-decoration-line-through text-body-secondary">Pay electricity bill</span>
+          <span class="status-badge status-completed">Completed</span>
         </div>
       </div>
     </div>
@@ -47,23 +50,23 @@
 <section class="row g-4 mt-4 mt-md-5">
   <div class="col-md-4">
     <div class="feature">
-      <div class="feature-icon"><i class="bi bi-tags"></i></div>
-      <h2 class="h5 fw-semibold">Organize by category</h2>
-      <p class="text-body-secondary mb-0">Group tasks into Home, School and Office so the right things get your attention.</p>
+      <div class="feature-icon"><i class="bi bi-kanban"></i></div>
+      <h2 class="h5 fw-semibold">Plan on a board</h2>
+      <p class="text-body-secondary mb-0">Drag tasks from Yet to start to Completed, and see at a glance what's in progress or on hold.</p>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="feature">
+      <div class="feature-icon"><i class="bi bi-calendar-check"></i></div>
+      <h2 class="h5 fw-semibold">Never miss a deadline</h2>
+      <p class="text-body-secondary mb-0">Set due dates and priorities. Overdue and due-today tasks stand out so nothing slips.</p>
     </div>
   </div>
   <div class="col-md-4">
     <div class="feature">
       <div class="feature-icon"><i class="bi bi-shield-lock"></i></div>
-      <h2 class="h5 fw-semibold">Private to you</h2>
-      <p class="text-body-secondary mb-0">Every account has its own task list. Nobody else can view, edit or delete your tasks.</p>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="feature">
-      <div class="feature-icon"><i class="bi bi-phone"></i></div>
-      <h2 class="h5 fw-semibold">Works everywhere</h2>
-      <p class="text-body-secondary mb-0">A responsive layout with light and dark themes, on desktop, tablet or phone.</p>
+      <h2 class="h5 fw-semibold">Private and everywhere</h2>
+      <p class="text-body-secondary mb-0">Your tasks are yours alone, in light or dark mode, on desktop, tablet or phone.</p>
     </div>
   </div>
 </section>
