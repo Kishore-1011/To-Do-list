@@ -2,13 +2,20 @@
 
 {% block title %}Page not found{% endblock %}
 
-{% block content %}
-<div class="empty-state text-center py-5 px-3">
-  <div class="feature-icon mx-auto mb-3"><i class="bi bi-signpost-split"></i></div>
+{% block body_class %}auth-page{% endblock %}
+
+{% block body %}
+<main id="main" class="not-found">
+  <a class="brand d-flex align-items-center gap-2 mb-5" href="{% url 'home' %}">
+    <span class="brand-mark"><i class="bi bi-check2-square"></i></span>
+    To-Do
+  </a>
+  <div class="empty-icon"><i class="bi bi-signpost-split"></i></div>
+  <p class="text-body-secondary small fw-semibold mb-1">404</p>
   <h1 class="h3 fw-bold">Page not found</h1>
   <p class="text-body-secondary mb-4">The page you're looking for doesn't exist, or you don't have access to it.</p>
-  <a class="btn btn-primary" href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'home' %}{% endif %}">
-    <i class="bi bi-arrow-left"></i> Back to {% if user.is_authenticated %}dashboard{% else %}home{% endif %}
+  <a class="btn btn-primary" href="{% url 'home' %}">
+    <i class="bi bi-arrow-left"></i> Back to {% if user.is_authenticated %}your tasks{% else %}log in{% endif %}
   </a>
-</div>
+</main>
 {% endblock %}

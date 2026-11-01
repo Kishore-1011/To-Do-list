@@ -1,0 +1,36 @@
+{% extends 'Task/base.html' %}
+
+{% block body_class %}auth-page{% endblock %}
+
+{% block body %}
+<div class="auth-layout">
+  <main id="main" class="auth-form-side">
+    <div class="auth-top">
+      <a class="brand d-flex align-items-center gap-2" href="{% url 'my-login' %}">
+        <span class="brand-mark"><i class="bi bi-check2-square"></i></span>
+        To-Do
+      </a>
+    </div>
+    <div class="auth-form-wrap">
+      {% block auth_form %}{% endblock %}
+    </div>
+    <p class="auth-foot small text-body-secondary">&copy; {% now "Y" %} To-Do</p>
+  </main>
+
+  <aside class="auth-art" aria-hidden="true">
+    <div class="auth-art-inner">
+      <p class="auth-quote">“The secret of getting ahead is getting started.”</p>
+      <div class="auth-stack">
+        <div class="auth-chip"><i class="bi bi-check-circle-fill"></i> Pay electricity bill</div>
+        <div class="auth-chip auth-chip-2"><i class="bi bi-lightning-charge-fill"></i> Prepare sprint demo · In progress</div>
+        <div class="auth-chip auth-chip-3"><i class="bi bi-calendar-event"></i> Submit assignment · Due today</div>
+      </div>
+      <ul class="auth-points">
+        <li><i class="bi bi-check2"></i> Today view with overdue tasks first</li>
+        <li><i class="bi bi-check2"></i> Drag-and-drop Kanban board</li>
+        <li><i class="bi bi-check2"></i> Priorities, due dates and search</li>
+      </ul>
+    </div>
+  </aside>
+</div>
+{% endblock %}

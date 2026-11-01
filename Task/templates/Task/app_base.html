@@ -1,0 +1,38 @@
+{% extends 'Task/base.html' %}
+
+{% block body_class %}app-page{% endblock %}
+
+{% block body %}
+<div class="app-shell">
+  {% include 'Task/_sidebar.html' %}
+
+  <div class="app-main">
+    <header class="app-topbar">
+      <button class="btn btn-icon d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#app-sidebar"
+              aria-controls="app-sidebar" aria-label="Open menu">
+        <i class="bi bi-list"></i>
+      </button>
+
+      <div class="app-topbar-title">
+        {% block topbar_title %}{% endblock %}
+      </div>
+
+      <form class="app-search" method="get" action="{% url 'dashboard' %}" role="search">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <label class="visually-hidden" for="app-search-input">Search tasks</label>
+        <input class="form-control" type="search" id="app-search-input" name="q" value="{{ query|default:'' }}"
+               placeholder="Search tasks…" autocomplete="off">
+        <kbd class="d-none d-md-inline">/</kbd>
+      </form>
+
+      <a class="btn btn-primary btn-sm d-none d-sm-inline-flex align-items-center gap-1" href="{% url 'create-task' %}?next={{ request.get_full_path|urlencode }}">
+        <i class="bi bi-plus-lg"></i> New task
+      </a>
+    </header>
+
+    <main id="main" class="app-content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock %}

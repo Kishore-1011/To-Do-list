@@ -1,0 +1,71 @@
+{% with url_name=request.resolver_match.url_name current_view=request.GET.view|default:'all' current_category=request.GET.category %}
+<aside class="app-sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="app-sidebar" aria-label="Main navigation">
+  <div class="sidebar-inner">
+    <div class="sidebar-head">
+      <a class="brand d-flex align-items-center gap-2" href="{% url 'dashboard' %}">
+        <span class="brand-mark"><i class="bi bi-check2-square"></i></span>
+        To-Do
+      </a>
+      <button type="button" class="btn-close d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#app-sidebar" aria-label="Close menu"></button>
+    </div>
+
+    <a class="btn btn-primary w-100 sidebar-new" href="{% url 'create-task' %}?next={{ request.get_full_path|urlencode }}">
+      <i class="bi bi-plus-lg"></i> New task
+    </a>
+
+    <nav class="sidebar-nav">
+      <a class="sidebar-link{% if url_name == 'dashboard' and current_view == 'today' %} active{% endif %}" href="{% url 'dashboard' %}?view=today">
+        <i class="bi bi-sun"></i><span>Today</span>
+        {% if sidebar_counts.today %}<span class="sidebar-count{% if sidebar_counts.today %} is-alert{% endif %}">{{ sidebar_counts.today }}</span>{% endif %}
+      </a>
+      <a class="sidebar-link{% if url_name == 'dashboard' and current_view == 'upcoming' %} active{% endif %}" href="{% url 'dashboard' %}?view=upcoming">
+        <i class="bi bi-calendar3"></i><span>Upcoming</span>
+        {% if sidebar_counts.upcoming %}<span class="sidebar-count">{{ sidebar_counts.upcoming }}</span>{% endif %}
+      </a>
+      <a class="sidebar-link{% if url_name == 'dashboard' and current_view == 'all' and not current_category %} active{% endif %}" href="{% url 'dashboard' %}">
+        <i class="bi bi-list-check"></i><span>All tasks</span>
+        {% if sidebar_counts.open %}<span class="sidebar-count">{{ sidebar_counts.open }}</span>{% endif %}
+      </a>
+      <a class="sidebar-link{% if url_name == 'board' %} active{% endif %}" href="{% url 'board' %}">
+        <i class="bi bi-kanban"></i><span>Board</span>
+      </a>
+      <a class="sidebar-link{% if url_name == 'dashboard' and current_view == 'completed' %} active{% endif %}" href="{% url 'dashboard' %}?view=completed">
+        <i class="bi bi-check2-circle"></i><span>Completed</span>
+        {% if sidebar_counts.completed %}<span class="sidebar-count">{{ sidebar_counts.completed }}</span>{% endif %}
+      </a>
+    </nav>
+
+    <div class="sidebar-section">
+      <h2 class="sidebar-heading">Categories</h2>
+      <nav class="sidebar-nav">
+        {% for category in sidebar_categories %}
+        <a class="sidebar-link{% if url_name == 'dashboard' and current_category == category.code %} active{% endif %}" href="{% url 'dashboard' %}?category={{ category.code }}">
+          <span class="category-dot category-dot-{{ category.style }}"></span><span>{{ category.label }}</span>
+          {% if category.total %}<span class="sidebar-count">{{ category.total }}</span>{% endif %}
+        </a>
+        {% endfor %}
+      </nav>
+    </div>
+
+    <div class="sidebar-foot">
+      <div class="dropup">
+        <button class="sidebar-user" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <span class="avatar">{{ user.username|first|upper }}</span>
+          <span class="text-truncate">{{ user.username }}</span>
+          <i class="bi bi-three-dots ms-auto"></i>
+        </button>
+        <ul class="dropdown-menu shadow">
+          <li><span class="dropdown-item-text small text-body-secondary">Signed in as <strong>{{ user.username }}</strong></span></li>
+          <li><hr class="dropdown-divider"></li>
+          <li>
+            <form method="post" action="{% url 'user-logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right"></i> Sign out</button>
+            </form>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</aside>
+{% endwith %}

@@ -1,42 +1,64 @@
-{% extends 'Task/base.html' %}
+{% extends 'Task/app_base.html' %}
 
 {% block title %}{{ title }}{% endblock %}
 
-{% block content %}
+{% block topbar_title %}
 <nav aria-label="breadcrumb">
-  <ol class="breadcrumb small">
-    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">My tasks</a></li>
-    <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% if next %}{{ next }}{% else %}{% url 'dashboard' %}{% endif %}">Tasks</a></li>
+    <li class="breadcrumb-item active fw-semibold" aria-current="page">{{ title }}</li>
   </ol>
 </nav>
+{% endblock %}
 
-<div class="form-card card shadow-sm border-0">
-  <div class="card-body p-4 p-sm-5">
-    <h1 class="h3 fw-bold mb-4">{{ title }}</h1>
+{% block content %}
+<div class="form-panel">
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger py-2" role="alert">{{ form.non_field_errors|join:" " }}</div>
+    {% endif %}
 
-    <form method="post" novalidate>
-      {% csrf_token %}
-      <input type="hidden" name="next" value="{{ next }}">
-      {% if form.non_field_errors %}
-      <div class="alert alert-danger py-2" role="alert">{{ form.non_field_errors|join:" " }}</div>
+    <div class="title-field mb-3">
+      <label class="visually-hidden" for="{{ form.name.id_for_label }}">Task name</label>
+      {{ form.name }}
+      {% for error in form.name.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+    </div>
+
+    <div class="prop-grid">
+      {% for field in form %}
+        {% if field.name != 'name' and field.name != 'description' %}
+        <div class="prop">
+          <label class="prop-label" for="{{ field.id_for_label }}">
+            {% if field.name == 'category' %}<i class="bi bi-tag"></i>
+            {% elif field.name == 'priority' %}<i class="bi bi-flag"></i>
+            {% elif field.name == 'status' %}<i class="bi bi-circle-half"></i>
+            {% else %}<i class="bi bi-calendar-event"></i>{% endif %}
+            {{ field.label }}
+          </label>
+          <div class="prop-input">
+            {{ field }}
+            {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <div class="mt-4">
+      <label class="form-label fw-medium" for="{{ form.description.id_for_label }}">Notes <span class="text-body-tertiary fw-normal">(optional)</span></label>
+      {{ form.description }}
+      {% for error in form.description.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+    </div>
+
+    <div class="form-actions">
+      {% if task %}
+      <a class="btn btn-link text-danger px-0 me-auto" href="{% url 'delete-task' task.id %}{% if next %}?next={{ next|urlencode }}{% endif %}"><i class="bi bi-trash"></i> Delete task</a>
       {% endif %}
-
-      {% with field=form.name %}{% include 'Task/_field.html' %}{% endwith %}
-
-      <div class="row g-3">
-        <div class="col-sm-6">{% with field=form.category %}{% include 'Task/_field.html' %}{% endwith %}</div>
-        <div class="col-sm-6">{% with field=form.priority %}{% include 'Task/_field.html' %}{% endwith %}</div>
-        <div class="col-sm-6">{% with field=form.status %}{% include 'Task/_field.html' %}{% endwith %}</div>
-        <div class="col-sm-6">{% with field=form.due_date %}{% include 'Task/_field.html' %}{% endwith %}</div>
-      </div>
-
-      {% with field=form.description %}{% include 'Task/_field.html' %}{% endwith %}
-
-      <div class="d-flex flex-wrap gap-2 mt-4">
-        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-lg"></i> {{ submit_label }}</button>
-        <a href="{% if next %}{{ next }}{% else %}{% url 'dashboard' %}{% endif %}" class="btn btn-outline-secondary">Cancel</a>
-      </div>
-    </form>
-  </div>
+      <a href="{% if next %}{{ next }}{% else %}{% url 'dashboard' %}{% endif %}" class="btn btn-outline-secondary">Cancel</a>
+      <button type="submit" class="btn btn-primary px-4">{{ submit_label }}</button>
+    </div>
+  </form>
 </div>
 {% endblock %}

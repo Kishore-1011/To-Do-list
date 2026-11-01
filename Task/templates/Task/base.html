@@ -4,92 +4,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="A simple, private task manager. Organize your Home, School and Office tasks in one place.">
+  <meta name="description" content="A focused task manager with lists, a Kanban board, due dates and priorities.">
   <title>{% block title %}Task manager{% endblock %} · To-Do</title>
 
-  <!-- Apply the saved or system colour theme before the page paints -->
-  <script>
-    (function () {
-      var saved = localStorage.getItem('theme');
-      var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-      document.documentElement.setAttribute('data-bs-theme', theme);
-    })();
-  </script>
-
   <link rel="icon" type="image/png" href="{% static 'assets/images/to-do-list.png' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
         integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.2/font/bootstrap-icons.min.css"
         integrity="sha384-nWN3KqaaVcbEsCjLSV+2jMjh62Iny/+mN3srM8TZeM8N6aj7eDl5wwYggjAJ4/sJ" crossorigin="anonymous">
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
-<body class="d-flex flex-column min-vh-100">
+<body class="{% block body_class %}{% endblock %}">
 
   <a class="visually-hidden-focusable skip-link" href="#main">Skip to content</a>
 
-  {% include 'Task/navbar.html' %}
-
-  <main id="main" class="flex-grow-1 py-4 py-md-5">
-    <div class="container">
-      {% block content %}{% endblock %}
-    </div>
-  </main>
-
-  <footer class="site-footer">
-    <div class="container py-5">
-      <div class="row g-4">
-        <div class="col-lg-5">
-          <a class="d-inline-flex align-items-center gap-2 fw-semibold text-body text-decoration-none mb-2" href="{% url 'home' %}">
-            <span class="brand-mark"><i class="bi bi-check2-square"></i></span>
-            To-Do
-          </a>
-          <p class="text-body-secondary small mb-0 footer-tagline">
-            Plan the day, track progress and finish what matters. One task at a time.
-          </p>
-        </div>
-        <div class="col-6 col-lg-3 offset-lg-1">
-          <h2 class="footer-heading">Workspace</h2>
-          <ul class="list-unstyled footer-links small">
-            {% if user.is_authenticated %}
-            <li><a href="{% url 'dashboard' %}">My tasks</a></li>
-            <li><a href="{% url 'board' %}">Kanban board</a></li>
-            <li><a href="{% url 'create-task' %}">New task</a></li>
-            {% else %}
-            <li><a href="{% url 'home' %}">Overview</a></li>
-            <li><a href="{% url 'register' %}">Create account</a></li>
-            <li><a href="{% url 'my-login' %}">Log in</a></li>
-            {% endif %}
-          </ul>
-        </div>
-        <div class="col-6 col-lg-3">
-          <h2 class="footer-heading">Stay on track</h2>
-          <ul class="list-unstyled footer-links text-body-secondary small">
-            <li><i class="bi bi-flag"></i> Set priorities</li>
-            <li><i class="bi bi-calendar-event"></i> Track due dates</li>
-            <li><i class="bi bi-kanban"></i> Move work forward</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <div class="container py-3 small text-body-secondary d-flex flex-column flex-sm-row justify-content-between gap-1">
-        <span>&copy; {% now "Y" %} To-Do</span>
-        <span>Made for focused, productive days.</span>
-      </div>
-    </div>
-  </footer>
+  {% block body %}{% endblock %}
 
   <!-- Notifications (server messages + ones added by script.js) -->
   <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toast-area">
     {% for message in messages %}
-    <div class="toast align-items-center border-0 text-bg-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'secondary' }}{% endif %}"
-         role="status" aria-live="polite" aria-atomic="true" data-bs-delay="3500">
-      <div class="d-flex">
-        <div class="toast-body">
-          <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% else %}bi-info-circle-fill{% endif %} me-1"></i>
+    <div class="toast app-toast align-items-center border-0" role="status" aria-live="polite" aria-atomic="true" data-bs-delay="3500">
+      <div class="d-flex align-items-center">
+        <div class="toast-body d-flex align-items-center gap-2">
+          <i class="bi {% if message.tags == 'error' %}bi-x-circle-fill text-danger{% else %}bi-check-circle-fill text-success{% endif %}"></i>
           {{ message }}
         </div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
       </div>
     </div>
     {% endfor %}

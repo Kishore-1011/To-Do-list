@@ -1,34 +1,27 @@
-{% extends 'Task/base.html' %}
+{% extends 'Task/_auth_layout.html' %}
 
 {% block title %}Log in{% endblock %}
 
-{% block content %}
-<div class="auth-card card shadow-sm border-0 mx-auto">
-  <div class="card-body p-4 p-sm-5">
-    <div class="text-center mb-4">
-      <div class="feature-icon mx-auto mb-3"><i class="bi bi-box-arrow-in-right"></i></div>
-      <h1 class="h3 fw-bold mb-1">Welcome back</h1>
-      <p class="text-body-secondary mb-0">Log in to see your tasks.</p>
-    </div>
+{% block auth_form %}
+<h1 class="auth-title">Welcome back</h1>
+<p class="auth-sub">Log in to pick up where you left off.</p>
 
-    <form method="post" novalidate>
-      {% csrf_token %}
-      <input type="hidden" name="next" value="{{ next }}">
-      {% if form.non_field_errors %}
-      <div class="alert alert-danger py-2 d-flex gap-2" role="alert">
-        <i class="bi bi-exclamation-circle-fill"></i>
-        <span>{{ form.non_field_errors|join:" " }}</span>
-      </div>
-      {% endif %}
-      {% for field in form %}
-        {% include 'Task/_field.html' %}
-      {% endfor %}
-      <button type="submit" class="btn btn-primary w-100 py-2 mt-2">Log in</button>
-    </form>
-
-    <p class="text-center text-body-secondary small mt-4 mb-0">
-      New here? <a href="{% url 'register' %}">Create an account</a>
-    </p>
+<form method="post" novalidate>
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ next }}">
+  {% if form.non_field_errors %}
+  <div class="alert alert-danger py-2 d-flex gap-2 small" role="alert">
+    <i class="bi bi-exclamation-circle-fill"></i>
+    <span>{{ form.non_field_errors|join:" " }}</span>
   </div>
-</div>
+  {% endif %}
+  {% for field in form %}
+    {% include 'Task/_field.html' %}
+  {% endfor %}
+  <button type="submit" class="btn btn-primary w-100 py-2 mt-1">Log in</button>
+</form>
+
+<p class="text-center text-body-secondary small mt-4 mb-0">
+  New to To-Do? <a href="{% url 'register' %}">Create an account</a>
+</p>
 {% endblock %}

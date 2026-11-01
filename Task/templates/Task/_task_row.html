@@ -1,0 +1,71 @@
+{# One task in the list view #}
+<li class="task-row{% if task.is_completed %} is-completed{% endif %}{% if task.due_state == 'overdue' %} is-overdue{% endif %} priority-edge-{{ task.priority_style }}">
+  <form method="post" action="{% url 'toggle-complete' task.id %}" class="task-check-form">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <button type="submit" class="task-check" aria-pressed="{{ task.is_completed|yesno:'true,false' }}"
+            title="{% if task.is_completed %}Mark as not done{% else %}Mark as complete{% endif %}"
+            aria-label="{% if task.is_completed %}Mark Task-{{ task.task_number }} as not done{% else %}Mark Task-{{ task.task_number }} as complete{% endif %}">
+      <i class="bi bi-check-lg"></i>
+    </button>
+  </form>
+
+  <div class="task-body">
+    <div class="task-line">
+      <a class="task-name" href="{% url 'update-task' task.id %}?next={{ request.get_full_path|urlencode }}">{{ task.name }}</a>
+      {% if task.status == 'in_progress' or task.status == 'on_hold' %}
+      <span class="status-badge status-{{ task.status }}">{{ task.get_status_display }}</span>
+      {% endif %}
+    </div>
+    {% if task.description %}
+    <p class="task-desc">{{ task.description|truncatechars:120 }}</p>
+    {% endif %}
+    <div class="task-meta">
+      <span class="meta-item text-body-tertiary">#{{ task.task_number }}</span>
+      <span class="meta-item"><span class="category-dot category-dot-{{ task.category_style }}"></span>{{ task.get_category_display }}</span>
+      {% if task.priority != 2 %}
+      <span class="meta-item priority-{{ task.priority_style }}"><i class="bi bi-flag-fill"></i> {{ task.get_priority_display }}</span>
+      {% endif %}
+      {% if task.due_date %}
+        {% with state=task.due_state %}
+        <span class="meta-item due-text{% if state %} due-{{ state }}{% endif %}" title="Due {{ task.due_date|date:'l, j F Y' }}">
+          <i class="bi {% if state == 'overdue' %}bi-exclamation-circle-fill{% else %}bi-calendar-event{% endif %}"></i>
+          {% if state == 'overdue' %}Overdue · {{ task.due_date|date:'j M' }}
+          {% elif state == 'today' %}Due today
+          {% elif state == 'soon' %}{{ task.due_date|date:'D, j M' }}
+          {% else %}{{ task.due_date|date:'j M Y' }}{% endif %}
+        </span>
+        {% endwith %}
+      {% endif %}
+      {% if task.is_completed and task.completed_at %}
+      <span class="meta-item text-success"><i class="bi bi-check2"></i> Done {{ task.completed_at|date:'j M' }}</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="task-actions">
+    <a class="btn btn-icon btn-sm" href="{% url 'update-task' task.id %}?next={{ request.get_full_path|urlencode }}"
+       title="Edit" aria-label="Edit Task-{{ task.task_number }}"><i class="bi bi-pencil"></i></a>
+    <div class="dropdown">
+      <button class="btn btn-icon btn-sm" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false"
+              aria-label="More actions for Task-{{ task.task_number }}"><i class="bi bi-three-dots"></i></button>
+      <ul class="dropdown-menu dropdown-menu-end shadow">
+        <li><h3 class="dropdown-header">Set status</h3></li>
+        {% for value, label in status_choices %}
+        {% if value != task.status %}
+        <li>
+          <form method="post" action="{% url 'update-status' task.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="status" value="{{ value }}">
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button class="dropdown-item" type="submit"><span class="status-dot status-dot-{{ value }}"></span>{{ label }}</button>
+          </form>
+        </li>
+        {% endif %}
+        {% endfor %}
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-danger" href="{% url 'delete-task' task.id %}?next={{ request.get_full_path|urlencode }}"><i class="bi bi-trash"></i> Delete</a></li>
+      </ul>
+    </div>
+  </div>
+</li>

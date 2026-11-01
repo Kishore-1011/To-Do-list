@@ -79,6 +79,14 @@ class TaskFormTests(TestCase):
 
 
 class AuthViewTests(TestCase):
+    def test_site_root_opens_login_when_signed_out(self):
+        self.assertRedirects(self.client.get('/'), reverse('my-login'))
+
+    def test_site_root_opens_tasks_when_signed_in(self):
+        User.objects.create_user('asha', password=PASSWORD)
+        self.client.login(username='asha', password=PASSWORD)
+        self.assertRedirects(self.client.get('/'), reverse('dashboard'))
+
     def test_register_logs_in_and_redirects(self):
         response = self.client.post(reverse('register'), {
             'username': 'asha', 'password1': PASSWORD, 'password2': PASSWORD,
@@ -227,7 +235,8 @@ class DashboardTests(TestCase):
 
     def test_stats(self):
         stats = self.client.get(reverse('dashboard')).context['stats']
-        self.assertEqual(stats, {'total': 4, 'open': 3, 'completed': 1, 'overdue': 1, 'percent_done': 25})
+        self.assertEqual(stats, {'total': 4, 'open': 3, 'completed': 1, 'overdue': 1, 'due_today': 1,
+                                 'done_this_week': 1, 'percent_done': 25})
 
     def test_due_badges_shown(self):
         response = self.client.get(reverse('dashboard'))
@@ -242,11 +251,55 @@ class DashboardTests(TestCase):
         self.assertEqual(set(self.names(category='H')), {'Call bank', 'Pay bill'})
         self.assertEqual(self.names(q='chapter'), ['Read chapter'])
 
-    def test_default_sort_is_due_date_with_completed_last(self):
+    def groups(self, **params):
+        response = self.client.get(reverse('dashboard'), params)
+        return {group['key']: [task.name for task in group['tasks']] for group in response.context['groups']}
+
+    def test_all_tasks_grouped_by_due_date(self):
+        self.assertEqual(self.groups(), {
+            'overdue': ['Write report'],
+            'today': ['Call bank'],
+            'later': ['Read chapter'],
+            'completed': ['Pay bill'],
+        })
         self.assertEqual(self.names(), ['Write report', 'Call bank', 'Read chapter', 'Pay bill'])
 
-    def test_sort_by_priority(self):
-        self.assertEqual(self.names(sort='priority')[0], 'Write report')
+    def test_next_seven_days_and_no_date_groups(self):
+        make_task(self.user, name='Soon', due_date=timezone.localdate() + timedelta(days=3))
+        make_task(self.user, name='Someday')
+        groups = self.groups()
+        self.assertEqual(groups['week'], ['Soon'])
+        self.assertEqual(groups['nodate'], ['Someday'])
+
+    def test_higher_priority_first_within_a_group(self):
+        today = timezone.localdate()
+        make_task(self.user, name='Urgent today', priority=3, due_date=today)
+        self.assertEqual(self.groups()['today'], ['Urgent today', 'Call bank'])
+
+    def test_today_view(self):
+        self.assertEqual(self.groups(view='today'), {'overdue': ['Write report'], 'today': ['Call bank']})
+
+    def test_upcoming_view(self):
+        self.assertEqual(self.groups(view='upcoming'), {'later': ['Read chapter']})
+
+    def test_completed_view(self):
+        self.assertEqual(self.groups(view='completed'), {'completed': ['Pay bill']})
+
+    def test_unknown_view_falls_back_to_all(self):
+        self.assertEqual(len(self.names(view='nope')), 4)
+
+    def test_quick_add_returns_to_list(self):
+        response = self.client.post(reverse('create-task'), {
+            'name': 'Buy milk', 'category': 'H', 'priority': 2, 'status': 'todo',
+            'next': reverse('dashboard') + '?view=today',
+        })
+        self.assertRedirects(response, reverse('dashboard') + '?view=today')
+        self.assertTrue(Task.objects.filter(name='Buy milk', user=self.user).exists())
+
+    def test_sidebar_counts(self):
+        counts = self.client.get(reverse('board')).context['sidebar_counts']
+        self.assertEqual((counts['open'], counts['today'], counts['upcoming'], counts['completed']), (3, 2, 1, 1))
+        self.assertEqual((counts['home'], counts['school'], counts['office']), (1, 1, 1))
 
     def test_unknown_filter_values_are_ignored(self):
         self.assertEqual(len(self.names(status='zzz', priority='9', category='Q', sort='evil')), 4)

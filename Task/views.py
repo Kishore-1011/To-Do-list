@@ -1,7 +1,9 @@
+from datetime import timedelta
+
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from django.db.models import Case, Count, F, IntegerField, Q, Value, When
+from django.db.models import Count, F, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -12,13 +14,37 @@ from .forms import CreateUserForm, LoginForm, TaskForm
 from .models import Task
 
 
-# "is_done" keeps completed tasks below open ones for the default sorts
-SORT_OPTIONS = {
-    'due': ('Due date', ['is_done', F('due_date').asc(nulls_last=True), 'task_number']),
-    'priority': ('Priority', ['is_done', '-priority', F('due_date').asc(nulls_last=True), 'task_number']),
-    'newest': ('Newest', ['-created_at', '-task_number']),
-    'number': ('Task number', ['task_number']),
+# Sidebar views of the task list: (page title, groups shown)
+LIST_VIEWS = {
+    'all': ('All tasks', ['overdue', 'today', 'week', 'later', 'nodate', 'completed']),
+    'today': ('Today', ['overdue', 'today']),
+    'upcoming': ('Upcoming', ['week', 'later']),
+    'completed': ('Completed', ['completed']),
 }
+
+GROUP_LABELS = {
+    'overdue': 'Overdue',
+    'today': 'Today',
+    'week': 'Next 7 days',
+    'later': 'Later',
+    'nodate': 'No due date',
+    'completed': 'Completed',
+}
+
+
+def group_for(task, today):
+    """Which list section a task belongs to."""
+    if task.is_completed:
+        return 'completed'
+    if task.due_date is None:
+        return 'nodate'
+    if task.due_date < today:
+        return 'overdue'
+    if task.due_date == today:
+        return 'today'
+    if task.due_date <= today + timedelta(days=7):
+        return 'week'
+    return 'later'
 
 
 def safe_next(request, default='dashboard'):
@@ -38,10 +64,11 @@ def overdue_filter():
     return Q(due_date__lt=timezone.localdate()) & ~Q(status=Task.Status.COMPLETED)
 
 
-# - Homepage
+# - Site root
 
 def home(request):
-    return render(request, 'Task/index.html')
+    # No landing page: signed-in users go to their tasks, everyone else to log in
+    return redirect('dashboard' if request.user.is_authenticated else 'my-login')
 
 
 # - Register a user
@@ -89,11 +116,13 @@ def user_logout(request):
     return redirect('my-login')
 
 
-# - Dashboard (list view with search, filters and sorting)
+# - Dashboard (task list grouped by due date, with views, search and filters)
 
 @login_required
 def dashboard(request):
     all_tasks = Task.objects.filter(user=request.user)
+    today = timezone.localdate()
+    week_start = today - timedelta(days=today.weekday())
 
     # Summary numbers; order_by() keeps the default ordering out of the GROUP BY
     status_totals = dict(all_tasks.order_by().values_list('status').annotate(total=Count('id')))
@@ -104,17 +133,19 @@ def dashboard(request):
         'open': total - completed,
         'completed': completed,
         'overdue': all_tasks.filter(overdue_filter()).count(),
+        'due_today': all_tasks.filter(due_date=today).exclude(status=Task.Status.COMPLETED).count(),
+        'done_this_week': all_tasks.filter(completed_at__date__gte=week_start).count(),
         'percent_done': round(completed * 100 / total) if total else 0,
     }
 
-    # Filters from the query string
+    # View from the sidebar, plus filters from the query string
+    view = request.GET.get('view', 'all')
+    if view not in LIST_VIEWS:
+        view = 'all'
     query = request.GET.get('q', '').strip()
     status = request.GET.get('status', '')
     category = request.GET.get('category', '')
     priority = request.GET.get('priority', '')
-    sort = request.GET.get('sort', 'due')
-    if sort not in SORT_OPTIONS:
-        sort = 'due'
 
     tasks = all_tasks
     if query:
@@ -129,23 +160,39 @@ def dashboard(request):
         tasks = tasks.filter(category=category)
     if priority.isdigit() and int(priority) in Task.Priority.values:
         tasks = tasks.filter(priority=int(priority))
-    is_done = Case(When(status=Task.Status.COMPLETED, then=Value(1)), default=Value(0),
-                   output_field=IntegerField())
-    tasks = tasks.annotate(is_done=is_done).order_by(*SORT_OPTIONS[sort][1])
+    tasks = tasks.order_by('-priority', F('due_date').asc(nulls_last=True), 'task_number')
+
+    # Split into sections; completed tasks show most recently finished first
+    title, group_keys = LIST_VIEWS[view]
+    buckets = {key: [] for key in group_keys}
+    for task in tasks:
+        key = group_for(task, today)
+        if key in buckets:
+            buckets[key].append(task)
+    if 'completed' in buckets:
+        buckets['completed'].sort(key=lambda t: t.completed_at or t.created_at, reverse=True)
+    groups = [{'key': key, 'label': GROUP_LABELS[key], 'tasks': buckets[key]}
+              for key in group_keys if buckets[key]]
+
+    hour = timezone.localtime().hour
+    greeting = 'Good morning' if hour < 12 else 'Good afternoon' if hour < 17 else 'Good evening'
 
     context = {
-        'records': tasks,
+        'view': view,
+        'title': title,
+        'greeting': greeting,
+        'groups': groups,
+        'records': [task for group in groups for task in group['tasks']],
         'stats': stats,
         'query': query,
         'selected_status': status,
         'selected_category': category,
         'selected_priority': priority,
-        'selected_sort': sort,
         'is_filtered': bool(query or status or category or priority),
         'status_choices': Task.Status.choices,
         'category_choices': Task.Category_Choices,
         'priority_choices': Task.Priority.choices,
-        'sort_choices': [(key, label) for key, (label, _) in SORT_OPTIONS.items()],
+        'quick_add_categories': Task.Category_Choices,
     }
     return render(request, 'Task/dashboard.html', context=context)
 

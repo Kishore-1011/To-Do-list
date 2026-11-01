@@ -7,20 +7,16 @@
 
     var urlTemplate = board.dataset.statusUrlTemplate;   // e.g. /tasks/0/status/
     var csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
-    var labels = {};
-    document.querySelectorAll('.board-column').forEach(function (column) {
-        var list = column.querySelector('.board-list');
-        labels[list.dataset.status] = column.querySelector('h2').textContent.trim();
-    });
-
     function statusUrl(taskId) {
         return urlTemplate.replace('/0/', '/' + taskId + '/');
     }
 
+    // Update column counts and the "Drop tasks here" placeholder
     function refreshCounts() {
         document.querySelectorAll('.board-list').forEach(function (list) {
             var count = document.querySelector('[data-count-for="' + list.dataset.status + '"]');
             count.textContent = list.children.length;
+            list.classList.toggle('is-empty', list.children.length === 0);
         });
     }
 
