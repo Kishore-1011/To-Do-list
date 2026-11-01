@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from .forms import CreateUserForm, LoginForm
 from django.contrib.auth.models import auth
 from django.contrib.auth import authenticate
@@ -71,7 +71,8 @@ def create_task(request):
 #upadte task
 @login_required(login_url='my-login')
 def update_task(request,pk):
-    task = Task.objects.get(id=pk)
+    # Only the owner can edit a task; anyone else gets a 404
+    task = get_object_or_404(Task, id=pk, user=request.user)
     form = UpdateTaskForm(instance=task)
     if request.method == 'POST':
         form = UpdateTaskForm(request.POST, instance=task)
@@ -86,10 +87,14 @@ def update_task(request,pk):
 # delete task
 @login_required(login_url='my-login')
 def delete_task(request,pk):
-    task = Task.objects.get(id=pk)
-    task.delete()
-    messages.success(request, 'Task was deleted successfully')
-    return redirect('dashboard')
+    # Only the owner can delete a task; deleting requires a POST from the confirm page
+    task = get_object_or_404(Task, id=pk, user=request.user)
+    if request.method == 'POST':
+        task.delete()
+        messages.success(request, 'Task was deleted successfully')
+        return redirect('dashboard')
+    context = {'task': task}
+    return render(request, 'Task/delete_task.html', context=context)
 
 
 def user_logout(request):
