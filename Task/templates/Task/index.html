@@ -1,0 +1,70 @@
+{% extends 'Task/base.html' %}
+
+{% block title %}Organize your day{% endblock %}
+
+{% block content %}
+<section class="hero row align-items-center g-5 py-md-4">
+  <div class="col-lg-6">
+    <span class="badge rounded-pill bg-body-tertiary text-body border mb-3"><i class="bi bi-stars"></i> Simple. Private. Free.</span>
+    <h1 class="display-5 fw-bold mb-3">Task management,<br>without the clutter.</h1>
+    <p class="lead text-body-secondary mb-4">
+      Capture what needs doing at home, school and the office. Sort tasks by category, keep notes, and pick up right where you left off.
+    </p>
+    <div class="d-flex flex-wrap gap-2">
+      {% if user.is_authenticated %}
+      <a class="btn btn-primary btn-lg" href="{% url 'dashboard' %}">Go to your dashboard <i class="bi bi-arrow-right"></i></a>
+      {% else %}
+      <a class="btn btn-primary btn-lg" href="{% url 'register' %}">Create a free account <i class="bi bi-arrow-right"></i></a>
+      <a class="btn btn-outline-secondary btn-lg" href="{% url 'my-login' %}">Log in</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="preview card shadow-sm border-0" aria-hidden="true">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="fw-semibold">My tasks</span>
+          <span class="text-body-secondary small">3 tasks</span>
+        </div>
+        <div class="preview-item">
+          <span class="category-badge category-office">Office</span>
+          <span>Prepare sprint demo</span>
+        </div>
+        <div class="preview-item">
+          <span class="category-badge category-school">School</span>
+          <span>Submit DBMS assignment</span>
+        </div>
+        <div class="preview-item">
+          <span class="category-badge category-home">Home</span>
+          <span>Pay electricity bill</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="row g-4 mt-4 mt-md-5">
+  <div class="col-md-4">
+    <div class="feature">
+      <div class="feature-icon"><i class="bi bi-tags"></i></div>
+      <h2 class="h5 fw-semibold">Organize by category</h2>
+      <p class="text-body-secondary mb-0">Group tasks into Home, School and Office so the right things get your attention.</p>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="feature">
+      <div class="feature-icon"><i class="bi bi-shield-lock"></i></div>
+      <h2 class="h5 fw-semibold">Private to you</h2>
+      <p class="text-body-secondary mb-0">Every account has its own task list. Nobody else can view, edit or delete your tasks.</p>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="feature">
+      <div class="feature-icon"><i class="bi bi-phone"></i></div>
+      <h2 class="h5 fw-semibold">Works everywhere</h2>
+      <p class="text-body-secondary mb-0">A responsive layout with light and dark themes, on desktop, tablet or phone.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

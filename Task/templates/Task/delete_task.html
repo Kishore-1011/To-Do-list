@@ -1,0 +1,22 @@
+{% extends 'Task/base.html' %}
+
+{% block title %}Delete Task-{{ task.task_number }}{% endblock %}
+
+{% block content %}
+<div class="form-card card shadow-sm border-0 mx-auto">
+  <div class="card-body p-4 p-sm-5 text-center">
+    <div class="feature-icon feature-icon-danger mx-auto mb-3"><i class="bi bi-trash"></i></div>
+    <h1 class="h4 fw-bold mb-2">Delete this task?</h1>
+    <p class="text-body-secondary mb-1">
+      <strong class="text-body">Task-{{ task.task_number }}: {{ task.name }}</strong>
+    </p>
+    <p class="text-body-secondary mb-4">This can't be undone.</p>
+
+    <form method="post" class="d-flex flex-wrap justify-content-center gap-2">
+      {% csrf_token %}
+      <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+      <button type="submit" class="btn btn-danger px-4"><i class="bi bi-trash"></i> Delete task</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

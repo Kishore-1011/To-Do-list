@@ -1,0 +1,14 @@
+{% extends 'Task/base.html' %}
+
+{% block title %}Page not found{% endblock %}
+
+{% block content %}
+<div class="empty-state text-center py-5 px-3">
+  <div class="feature-icon mx-auto mb-3"><i class="bi bi-signpost-split"></i></div>
+  <h1 class="h3 fw-bold">Page not found</h1>
+  <p class="text-body-secondary mb-4">The page you're looking for doesn't exist, or you don't have access to it.</p>
+  <a class="btn btn-primary" href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'home' %}{% endif %}">
+    <i class="bi bi-arrow-left"></i> Back to {% if user.is_authenticated %}dashboard{% else %}home{% endif %}
+  </a>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% with current=request.resolver_match.url_name %}
+<nav class="navbar navbar-expand-md border-bottom bg-body sticky-top">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2 fw-semibold" href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'home' %}{% endif %}">
+      <span class="brand-mark"><i class="bi bi-check2-square"></i></span>
+      To-Do
+    </a>
+
+    <div class="d-flex align-items-center gap-1 order-md-last">
+      <button class="btn btn-link nav-link px-2 theme-toggle" type="button" id="theme-toggle" aria-label="Toggle dark mode">
+        <i class="bi bi-moon-stars theme-icon-light"></i>
+        <i class="bi bi-sun theme-icon-dark"></i>
+      </button>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </div>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      {% if user.is_authenticated %}
+      <ul class="navbar-nav ms-auto align-items-md-center gap-md-2">
+        <li class="nav-item">
+          <a class="nav-link{% if current == 'dashboard' %} active{% endif %}" href="{% url 'dashboard' %}"
+             {% if current == 'dashboard' %}aria-current="page"{% endif %}>
+            <i class="bi bi-grid"></i> Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link{% if current == 'create-task' %} active{% endif %}" href="{% url 'create-task' %}"
+             {% if current == 'create-task' %}aria-current="page"{% endif %}>
+            <i class="bi bi-plus-circle"></i> New task
+          </a>
+        </li>
+        <li class="nav-item d-none d-md-block"><span class="vr mx-2"></span></li>
+        <li class="nav-item">
+          <span class="navbar-text small me-md-2"><i class="bi bi-person-circle"></i> {{ user.username }}</span>
+        </li>
+        <li class="nav-item">
+          <form method="post" action="{% url 'user-logout' %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-secondary btn-sm my-2 my-md-0">
+              <i class="bi bi-box-arrow-right"></i> Sign out
+            </button>
+          </form>
+        </li>
+      </ul>
+      {% else %}
+      <ul class="navbar-nav ms-auto align-items-md-center gap-md-2">
+        <li class="nav-item">
+          <a class="nav-link{% if current == 'my-login' %} active{% endif %}" href="{% url 'my-login' %}">Log in</a>
+        </li>
+        <li class="nav-item">
+          <a class="btn btn-primary btn-sm my-2 my-md-0" href="{% url 'register' %}">Get started</a>
+        </li>
+      </ul>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+{% endwith %}

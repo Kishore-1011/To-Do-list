@@ -21,5 +21,10 @@ class Task(models.Model):
             self.task_number = max_task_number + 1
         super().save(*args, **kwargs)
 
+    @property
+    def category_style(self):
+        # CSS modifier used to colour the category badge
+        return {'H': 'home', 'S': 'school', 'O': 'office'}.get(self.category, 'home')
+
     def __str__(self):
         return self.name
