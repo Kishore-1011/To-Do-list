@@ -40,9 +40,15 @@ class LoginForm(BootstrapFormMixin, AuthenticationForm):
 class TaskForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['name', 'category', 'description']
-        labels = {'name': 'Task name'}
+        fields = ['name', 'category', 'priority', 'status', 'due_date', 'description']
+        labels = {'name': 'Task name', 'due_date': 'Due date'}
+        help_texts = {'description': 'Optional.', 'due_date': 'Optional.'}
         widgets = {
             'name': forms.TextInput(attrs={'placeholder': 'e.g. Submit project report', 'autofocus': True}),
-            'description': forms.Textarea(attrs={'rows': 5, 'placeholder': 'Add details, links or notes'}),
+            'due_date': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+            'description': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Add details, links or notes'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['category'].choices = [('', 'Choose a category')] + list(Task.Category_Choices)
