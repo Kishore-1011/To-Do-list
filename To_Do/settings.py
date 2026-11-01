@@ -159,6 +159,10 @@ STORAGES = {
 
 LOGIN_URL = 'my-login'
 
+if TESTING:
+    # Fast (insecure) hashing keeps the test suite quick; never used outside tests
+    PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
